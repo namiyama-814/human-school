@@ -8,32 +8,39 @@ html(lang="ja")
     link(rel="preconnect" href="https://fonts.googleapis.com")
     link(rel="preconnect" href="https://fonts.gstatic.com" crossorigin)
     link(href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet")
-    title StarEdu - うわっ…あの人の学歴、低すぎ…？
+    title StarEdu - 芸能人の学歴検索
     style.
-
       body {
-        font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Google Sans"
+        font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Google Sans";
       }
-
       body, html {
         height: 100%;
         margin: 0;
       }
-
       .center-wrapper {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100%;
       }
-
       .form-container {
         width: 100%;
         max-width: 400px;
         padding: 20px;
         box-sizing: border-box;
+        position: relative;
       }
-
+      #result {
+        position: absolute;
+        top: 100%;
+        left: 20px;
+        right: 20px;
+        min-height: 3rem;
+      }
+      #result .alert {
+        margin: 0;
+        border-radius: 0.375rem;
+      }
   body
     .center-wrapper
       .form-container
@@ -41,10 +48,53 @@ html(lang="ja")
           strong StarEdu
         p.text-center.mt-0.mb-3 芸能人の名前を入力すると学歴が表示されます
         form#make-form
-
           .form-floating.mb-3
-            input#count.form-control(type="text" placeholder=" " id="nameInput")
-            label(for="count") 名前を入力
-
+            input#nameInput.form-control(type="text" name="name" placeholder=" ")
+            label(for="nameInput") 名前を入力
           .d-grid
             button.btn.btn-primary(type="submit") 学歴を表示
+
+        // アラート表示エリア
+        div#result.mt-3
+
+    script.
+      const form = document.getElementById('make-form');
+      const result = document.getElementById('result');
+
+      // アラート表示関数
+      function showAlert(message, type) {
+        result.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // ページのリロードを防止
+        const name = document.getElementById('nameInput').value.trim();
+
+        if (!name) {
+          showAlert('名前を入力してください', 'danger');
+          return;
+        }
+
+        try {
+          const response = await fetch('/get-education', {
+            method: 'POST',
+            body: new URLSearchParams({ name }),
+          });
+
+          if (!response.ok) {
+            showAlert('サーバーエラーが発生しました', 'danger');
+            return;
+          }
+
+          const data = await response.json();
+
+          if (data.error) {
+            showAlert(data.error, 'danger');
+          } else {
+            showAlert(`${data.name}さんの学歴：${data.education || '不明'}`, 'success');
+          }
+        } catch (err) {
+          showAlert('学歴の取得に失敗しました', 'danger');
+          console.error(err);
+        }
+      });

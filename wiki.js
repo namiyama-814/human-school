@@ -5,35 +5,37 @@ async function getEdBug(name) {
     const page = await WikiJS({ apiUrl: 'https://ja.wikipedia.org/w/api.php' }).page(name);
     const categories = await page.categories();
 
-    // 学歴優先度（大学 > 高校）
     const educationPriority = ["大学", "短期大学", "専門学校", "高等学校"];
 
-    // 学校名抽出
     const educationMatches = categories
       .map(cat => {
-        const names = cat.replace(/^Category:/, ""); // Category:を除去
-        const regex = /(.+?)出身/i; //「出身」までを学校名として抽出
+        const names = cat.replace(/^Category:/, "");
+        const regex = /(.+?)出身/i;
         const match = names.match(regex);
         return match ? match[1] : null;
       })
       .filter(Boolean);
 
-    // 最終学歴を優先度順に決定
     let finalEducation = null;
     for (const eduType of educationPriority) {
       const match = educationMatches.find(school => school.includes(eduType));
       if (match) {
-        finalEducation = match; // 学校名のみ
+        finalEducation = match;
         break;
       }
     }
 
-    console.log(`最終学歴：${finalEducation}`);
+    if (finalEducation) {
+      console.info(`[${new Date().toISOString()}] 人物：${name} 最終学歴：${finalEducation}`);
+    } else {
+      console.warn(`[${new Date().toISOString()}] 人物：${name} 学歴情報なし`);
+    }
+
+    return finalEducation;
   } catch (err) {
-    console.error(`ページ取得エラー: ${err.message}`);
+    console.error(`[${new Date().toISOString()}] ページ取得エラー: ${err.message}`);
+    return null;
   }
 }
-
-getEdBug("イーロンマスク");
 
 module.exports = { getEdBug };
