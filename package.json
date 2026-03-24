@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@hono/node-server": "^1.14.2",
+    "hono": "^4.7.10",
+    "pug": "^3.0.4",
+    "wikijs": "^6.4.1"
+  }
+}
