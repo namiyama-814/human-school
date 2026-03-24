@@ -90,11 +90,7 @@ html(lang="ja")
           showAlert('名前を入力してください', 'danger');
           return;
         }
-
-        // 多重送信防止
         button.disabled = true;
-
-        // ローディング表示
         showLoading();
 
         try {
@@ -123,7 +119,6 @@ html(lang="ja")
           console.error(err);
           showAlert('学歴の取得に失敗しました', 'danger');
         } finally {
-          // ボタン復帰
           button.disabled = false;
         }
       });
