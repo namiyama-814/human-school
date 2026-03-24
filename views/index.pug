@@ -1,4 +1,4 @@
-doctype html
+doctype html 
 html(lang="ja")
   head
     meta(charset="UTF-8")
@@ -41,39 +41,61 @@ html(lang="ja")
         margin: 0;
         border-radius: 0.375rem;
       }
+
   body
     .center-wrapper
       .form-container
         h2.mb-1.text-center
           strong StarEdu
         p.text-center.mt-0.mb-3 芸能人の名前を入力すると学歴が表示されます
+
         form#make-form
           .form-floating.mb-3
             input#nameInput.form-control(type="text" name="name" placeholder=" ")
             label(for="nameInput") 名前を入力
           .d-grid
-            button.btn.btn-primary(type="submit") 学歴を表示
+            button#submitBtn.btn.btn-primary(type="submit") 学歴を表示
 
-        // アラート表示エリア
         div#result.mt-3
 
     script.
       const form = document.getElementById('make-form');
       const result = document.getElementById('result');
+      const button = document.getElementById('submitBtn');
 
-      // アラート表示関数
+      // 状態表示関数
       function showAlert(message, type) {
-        result.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+        result.innerHTML = `
+          <div class="alert alert-${type}" role="alert">
+            ${message}
+          </div>
+        `;
+      }
+
+      function showLoading() {
+        result.innerHTML = `
+          <div class="alert alert-info d-flex align-items-center gap-2" role="alert">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <div>取得中...</div>
+          </div>
+        `;
       }
 
       form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // ページのリロードを防止
+        e.preventDefault();
+
         const name = document.getElementById('nameInput').value.trim();
 
         if (!name) {
           showAlert('名前を入力してください', 'danger');
           return;
         }
+
+        // 多重送信防止
+        button.disabled = true;
+
+        // ローディング表示
+        showLoading();
 
         try {
           const response = await fetch('/get-education', {
@@ -91,10 +113,17 @@ html(lang="ja")
           if (data.error) {
             showAlert(data.error, 'danger');
           } else {
-            showAlert(`${data.name}さんの学歴：${data.education || '不明'}`, 'success');
+            showAlert(
+              `${data.name}さんの学歴：${data.education || '不明'}`,
+              'success'
+            );
           }
+
         } catch (err) {
-          showAlert('学歴の取得に失敗しました', 'danger');
           console.error(err);
+          showAlert('学歴の取得に失敗しました', 'danger');
+        } finally {
+          // ボタン復帰
+          button.disabled = false;
         }
       });
