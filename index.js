@@ -1,6 +1,6 @@
 const { Hono } = require('hono');
 const { serve } = require('@hono/node-server');
-const { getEdBug } = require('./wiki.js'); // 学歴を取得する関数
+const { getEdBug } = require('./wiki.js');
 const pug = require('pug');
 
 const app = new Hono();
@@ -25,6 +25,16 @@ app.post('/get-education', async (c) => {
     console.error(err);
     return c.json({ error: '学歴取得に失敗しました' }, 500);
   }
+});
+
+//API
+app.get('/api', async(c) => {
+  const nameValue = c.req.query('name');
+  if (!nameValue) {
+    return c.json({ error: 'nameを指定してください'}, 400);
+  };
+  const result = await getEdBug(nameValue);
+  return c.json({[nameValue]:result});
 });
 
 const port = process.env.PORT || 8000;
